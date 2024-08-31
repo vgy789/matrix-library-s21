@@ -1,0 +1,565 @@
+#include "../s21_matrix.h"
+#include <check.h>
+#include <stdbool.h>
+
+void create_tc(int m, int n, err_t expected) {
+  matrix_t result = (matrix_t){0};
+  err_t err_code = s21_create_matrix(m, n, &result);
+
+  ck_assert_msg(err_code == expected, "expected: %d, got: %d", expected, err_code);
+  if (expected == OK) {
+    ck_assert_msg(result.rows == m, "expected_rows: %d, got_rows: %d", m, result.rows);
+    ck_assert_msg(result.columns == n, "expected_columns: %d, got_columns: %d", n, result.columns);
+    ck_assert_msg(result.matrix != NULL, "matrix is NULL");
+    s21_remove_matrix(&result);
+  }
+}
+
+void remove_tc(matrix_t *A) {
+  s21_remove_matrix(A);
+  if (A != NULL) {
+    ck_assert_msg(A->rows == 0, "expected_rows: 0, got_rows: %d", A->rows);
+    ck_assert_msg(A->columns == 0, "expected_columns: 0, got_columns: %d", A->columns);
+    ck_assert_msg(A->matrix == NULL, "matrix isn't NULL");
+  }
+}
+
+void equalent_tc(matrix_t *A, matrix_t *B, cmp_result expected) {
+  cmp_result result = s21_eq_matrix(A, B);
+  ck_assert_msg(result == expected, "expected: %d, got: %d", expected, result);
+  s21_remove_matrix(A);
+  s21_remove_matrix(B);
+}
+
+void sum_tc(matrix_t *A, matrix_t *B, matrix_t *expected, err_t expected_code) {
+  matrix_t result = (matrix_t){0};
+  err_t err_code = s21_sum_matrix(A, B, &result);
+  ck_assert_msg(err_code == expected_code, "error_code: %d", err_code);
+  if (expected_code == OK) {
+    bool is_eq = s21_eq_matrix(&result, expected);
+    ck_assert(is_eq == SUCCESS);
+    s21_remove_matrix(A);
+    s21_remove_matrix(B);
+    s21_remove_matrix(expected);
+  }
+}
+
+void sub_tc(matrix_t *A, matrix_t *B, matrix_t *expected, err_t expected_code) {
+  matrix_t result = (matrix_t){0};
+  err_t err_code = s21_sub_matrix(A, B, &result);
+  ck_assert_msg(err_code == expected_code, "error sum: %d", err_code);
+  if (expected_code == OK) {
+    bool is_eq = s21_eq_matrix(&result, expected);
+    ck_assert(is_eq == SUCCESS);
+    s21_remove_matrix(A);
+    s21_remove_matrix(B);
+    s21_remove_matrix(expected);
+  }
+}
+
+void numeration_matrix(matrix_t *matrix) {
+  int counter = 0;
+  for (int i = 0; i < matrix->rows; ++i) {
+    for (int j = 0; j < matrix->columns; ++j) {
+      matrix->matrix[i][j] = counter;
+      counter += 1;
+    }
+  }
+}
+
+void multiply_number_tc(matrix_t *A, double number, matrix_t *expected, err_t expected_code) {
+  matrix_t result = (matrix_t){0};
+  err_t err_code = s21_mult_number(A, number, &result);
+  ck_assert_msg(err_code == expected_code, "error mul num: %d", err_code);
+  if (expected_code == OK) {
+    bool is_eq = s21_eq_matrix(&result, expected);
+    ck_assert(is_eq == SUCCESS);
+    s21_remove_matrix(A);
+    s21_remove_matrix(expected);
+  }
+}
+
+void mul_tc(matrix_t *A, matrix_t *B, matrix_t *expected, err_t expected_code) {
+  matrix_t result = (matrix_t){0};
+  err_t err_code = s21_mult_matrix(A, B, &result);
+  ck_assert_msg(err_code == expected_code, "error mul: %d", err_code);
+  if (expected_code == OK) {
+    bool is_eq = s21_eq_matrix(&result, expected);
+    ck_assert(is_eq == SUCCESS);
+    s21_remove_matrix(A);
+    s21_remove_matrix(expected);
+  }
+}
+
+void determinant_tc(matrix_t *A, double expected, err_t expected_code) {
+  double result = 0;
+  err_t err_code = s21_determinant(A, &result);
+  ck_assert_msg(err_code == expected_code, "err_code expected: %d, got: %d", expected_code, err_code);
+  if (expected_code == OK) {
+    ck_assert_msg(expected == result, "expected: %lf, got: %lf", expected, result);
+    s21_remove_matrix(A);
+  }
+}
+
+#test create_1
+create_tc(6, 0, INCORRECT_MATRIX);
+
+#test create_2
+create_tc(0, 6, INCORRECT_MATRIX);
+
+#test create_3
+create_tc(0, 0, INCORRECT_MATRIX);
+
+#test create_4
+create_tc(-1, 8, INCORRECT_MATRIX);
+
+#test create_5
+create_tc(-1, -8, INCORRECT_MATRIX);
+
+#test create_6
+create_tc(1, 1, OK);
+
+#test create_7
+create_tc(4, 2, OK);
+
+#test create_8
+create_tc(1, 2, OK);
+
+#test remove_1
+  matrix_t A = (matrix_t){0};
+  s21_create_matrix(3, 3, &A);
+  A.matrix[0][0] = 1.f; A.matrix[0][1] = 22.4f; A.matrix[0][2] = 333.f;
+  A.matrix[1][0] = 1.f; A.matrix[1][1] = 22.4f; A.matrix[1][2] = 333.f;
+  A.matrix[2][0] = 1.f; A.matrix[2][1] = 22.4f; A.matrix[2][2] = 333.f;
+  remove_tc(&A);
+
+#test remove_2
+  matrix_t A = (matrix_t){0};
+  s21_create_matrix(1, 1, &A);
+  A.matrix[0][0] = 1.f;
+  remove_tc(&A);
+
+#test remove_3
+  matrix_t A = (matrix_t){.columns = 0, .rows = 0, .matrix = NULL};
+  remove_tc(&A);
+
+#test remove_4
+  remove_tc(NULL);
+
+#test equal_1
+  matrix_t A = (matrix_t){0};
+  s21_create_matrix(3, 3, &A);
+  A.matrix[0][0] = 1.f; A.matrix[0][1] = 22.4f; A.matrix[0][2] = 333.f;
+  A.matrix[1][0] = 1.f; A.matrix[1][1] = 22.4f; A.matrix[1][2] = 333.f;
+  A.matrix[2][0] = 1.f; A.matrix[2][1] = 22.4f; A.matrix[2][2] = 333.f;
+  matrix_t B = (matrix_t){0};
+  s21_create_matrix(3, 3, &B);
+  B.matrix[0][0] = 1.f; B.matrix[0][1] = 0.f; B.matrix[0][2] = 0.f;
+  B.matrix[1][0] = 1.f; B.matrix[1][1] = 0.f; B.matrix[1][2] = 0.f;
+  B.matrix[2][0] = 1.f; B.matrix[2][1] = 0.f; B.matrix[2][2] = 0.f;
+
+  equalent_tc(&A, &B, FAILURE);
+
+#test equal_2
+  matrix_t A = (matrix_t){0};
+  s21_create_matrix(1, 1, &A);
+  A.matrix[0][0] = 1.f;
+  matrix_t B = (matrix_t){0};
+  s21_create_matrix(1, 1, &B);
+  B.matrix[0][0] = 1.f;
+
+  equalent_tc(&A, &B, SUCCESS);
+
+#test equal_3
+  matrix_t A = (matrix_t){0};
+  s21_create_matrix(2, 2, &A);
+  A.matrix[0][0] = 1.f;
+  A.matrix[0][1] = 1.f;
+  A.matrix[1][0] = 1.f;
+  A.matrix[1][1] = 1.f;
+
+  equalent_tc(&A, &A, SUCCESS);
+
+#test equal_4
+  matrix_t A = (matrix_t){0};
+  s21_create_matrix(2, 2, &A);
+  matrix_t B = (matrix_t){0};
+  s21_create_matrix(3, 3, &B);
+
+  equalent_tc(&A, &B, FAILURE);
+
+#test transpose_1
+  matrix_t A = (matrix_t){0};
+  matrix_t expected = (matrix_t){0};
+  matrix_t result = (matrix_t){0};
+
+  s21_create_matrix(2, 2, &A);
+  s21_create_matrix(2, 2, &expected);
+  // 0 1
+  // 2 3
+  A.matrix[0][0] = 0.f;
+  A.matrix[0][1] = 1.f;
+  A.matrix[1][0] = 2.f;
+  A.matrix[1][1] = 3.f;
+  // 0 2
+  // 1 3
+  expected.matrix[0][0] = 0.f;
+  expected.matrix[0][1] = 2.f;
+  expected.matrix[1][0] = 1.f;
+  expected.matrix[1][1] = 3.f;
+
+  s21_transpose(&A, &result);
+  int is_eq = s21_eq_matrix(&result, &expected);
+  s21_remove_matrix(&A);
+  s21_remove_matrix(&expected);
+  s21_remove_matrix(&result);
+  ck_assert(is_eq == SUCCESS);
+
+#test transpose_2
+  matrix_t A = (matrix_t){0};
+  matrix_t expected = (matrix_t){0};
+  matrix_t result = (matrix_t){0};
+
+  s21_create_matrix(1, 1, &A);
+  s21_create_matrix(1, 1, &expected);
+  A.matrix[0][0] = 0.f;
+  expected.matrix[0][0] = 0.f;
+
+  s21_transpose(&A, &result);
+  int is_eq = s21_eq_matrix(&result, &expected);
+  s21_remove_matrix(&A);
+  s21_remove_matrix(&expected);
+  s21_remove_matrix(&result);
+  ck_assert(is_eq == SUCCESS);
+
+#test transpose_3
+  matrix_t A = (matrix_t){0};
+  matrix_t expected = (matrix_t){0};
+  matrix_t result = (matrix_t){0};
+
+  s21_create_matrix(2, 2, &A);
+  s21_create_matrix(2, 2, &expected);
+  // 0 0
+  // 1 1
+  A.matrix[0][0] = 0.f;
+  A.matrix[0][1] = 0.f;
+  A.matrix[1][0] = 1.f;
+  A.matrix[1][1] = 1.f;
+  // 0 1
+  // 0 1
+  expected.matrix[0][0] = 0.f;
+  expected.matrix[0][1] = 1.f;
+  expected.matrix[1][0] = 0.f;
+  expected.matrix[1][1] = 1.f;
+  s21_transpose(&A, &result);
+  int is_eq = s21_eq_matrix(&result, &expected);
+  s21_remove_matrix(&A);
+  s21_remove_matrix(&expected);
+  s21_remove_matrix(&result);
+  ck_assert(is_eq == SUCCESS);
+
+#test transpose_4
+  matrix_t A = (matrix_t){0};
+  matrix_t expected = (matrix_t){0};
+  matrix_t result = (matrix_t){0};
+
+  s21_create_matrix(2, 3, &A);
+  s21_create_matrix(3, 2, &expected);
+  // 0 0 1
+  // 1 1 2
+  A.matrix[0][0] = 0.f;
+  A.matrix[0][1] = 0.f;
+  A.matrix[0][2] = 1.f;
+  A.matrix[1][0] = 1.f;
+  A.matrix[1][1] = 1.f;
+  A.matrix[1][2] = 2.f;
+  // 0 1
+  // 0 1
+  // 1 2
+  expected.matrix[0][0] = 0.f;
+  expected.matrix[0][1] = 1.f;
+  expected.matrix[1][0] = 0.f;
+  expected.matrix[1][1] = 1.f;
+  expected.matrix[2][0] = 1.f;
+  expected.matrix[2][1] = 2.f;
+  s21_transpose(&A, &result);
+  int is_eq = s21_eq_matrix(&result, &expected);
+  s21_remove_matrix(&A);
+  s21_remove_matrix(&expected);
+  s21_remove_matrix(&result);
+  ck_assert(is_eq == SUCCESS);
+
+#test transpose_5
+  matrix_t A = (matrix_t){0};
+  matrix_t expected = (matrix_t){0};
+  matrix_t result = (matrix_t){0};
+
+  s21_create_matrix(3, 2, &A);
+  s21_create_matrix(2, 3, &expected);
+  // 1 4
+  // 2 5
+  // 3 6
+  A.matrix[0][0] = 1.f;
+  A.matrix[0][1] = 4.f;
+  A.matrix[1][0] = 2.f;
+  A.matrix[1][1] = 5.f;
+  A.matrix[2][0] = 3.f;
+  A.matrix[2][1] = 6.f;
+  // 1 2 3
+  // 4 5 6
+  expected.matrix[0][0] = 1.f;
+  expected.matrix[0][1] = 2.f;
+  expected.matrix[0][2] = 3.f;
+  expected.matrix[1][0] = 4.f;
+  expected.matrix[1][1] = 5.f;
+  expected.matrix[1][2] = 6.f;
+  s21_transpose(&A, &result);
+  int is_eq = s21_eq_matrix(&result, &expected);
+  s21_remove_matrix(&A);
+  s21_remove_matrix(&expected);
+  s21_remove_matrix(&result);
+  ck_assert(is_eq == SUCCESS);
+
+#test sum_1
+  matrix_t A = (matrix_t){0};
+  matrix_t B = (matrix_t){0};
+  matrix_t expected = (matrix_t){0};
+
+  s21_create_matrix(2, 2, &A);
+  s21_create_matrix(2, 2, &B);
+  s21_create_matrix(2, 2, &expected);
+  A.matrix[0][0] = 2.f;
+  A.matrix[0][1] = 2.f;
+  A.matrix[1][0] = 1.f;
+  A.matrix[1][1] = 1.f;
+  B.matrix[0][0] = 2.f;
+  B.matrix[0][1] = 2.f;
+  B.matrix[1][0] = 1.f;
+  B.matrix[1][1] = 1.f;
+  expected.matrix[0][0] = 4.f;
+  expected.matrix[0][1] = 4.f;
+  expected.matrix[1][0] = 2.f;
+  expected.matrix[1][1] = 2.f;
+  sum_tc(&A, &B, &expected, OK);
+
+#test sum_2
+  matrix_t A = (matrix_t){0};
+  matrix_t B = (matrix_t){0};
+  matrix_t expected = (matrix_t){0};
+
+  s21_create_matrix(1, 1, &A);
+  s21_create_matrix(1, 1, &B);
+  s21_create_matrix(1, 1, &expected);
+  A.matrix[0][0] = 5.1f;
+  B.matrix[0][0] = 2.2f;
+  expected.matrix[0][0] = 7.3f;
+  sum_tc(&A, &B, &expected, OK);
+
+#test sum_3
+  matrix_t A = (matrix_t){0};
+  matrix_t B = (matrix_t){0};
+  matrix_t expected = (matrix_t){0};
+
+  s21_create_matrix(0, 1, &A);
+  s21_create_matrix(1, 1, &B);
+  s21_create_matrix(1, 1, &expected);
+  B.matrix[0][0] = 2.2f;
+  expected.matrix[0][0] = 7.3f;
+  sum_tc(&A, &B, &expected, CALCULATION_ERROR);
+
+#test sum_4
+  matrix_t A = (matrix_t){0};
+  matrix_t B = (matrix_t){0};
+  matrix_t expected = (matrix_t){0};
+
+  s21_create_matrix(1, 1, &A);
+  s21_create_matrix(0, 1, &B);
+  s21_create_matrix(1, 1, &expected);
+  A.matrix[0][0] = 2.2f;
+  expected.matrix[0][0] = 7.3f;
+  sum_tc(&A, &B, &expected, CALCULATION_ERROR);
+
+#test sum_5
+  matrix_t A = (matrix_t){0};
+  matrix_t B = (matrix_t){0};
+  matrix_t expected = (matrix_t){0};
+
+  s21_create_matrix(1, 1, &A);
+  s21_create_matrix(2, 2, &B);
+  s21_create_matrix(2, 2, &expected);
+  sum_tc(&A, &B, &expected, CALCULATION_ERROR);
+
+#test sub_1
+  matrix_t A = (matrix_t){0};
+  matrix_t B = (matrix_t){0};
+  matrix_t expected = (matrix_t){0};
+
+  s21_create_matrix(2, 2, &A);
+  s21_create_matrix(2, 2, &B);
+  s21_create_matrix(2, 2, &expected);
+  A.matrix[0][0] = 4.f;
+  A.matrix[0][1] = 4.f;
+  A.matrix[1][0] = 2.f;
+  A.matrix[1][1] = 2.f;
+  B.matrix[0][0] = 2.f;
+  B.matrix[0][1] = 2.f;
+  B.matrix[1][0] = 1.f;
+  B.matrix[1][1] = 1.f;
+  expected.matrix[0][0] = 2.f;
+  expected.matrix[0][1] = 2.f;
+  expected.matrix[1][0] = 1.f;
+  expected.matrix[1][1] = 1.f;
+  sub_tc(&A, &B, &expected, OK);
+
+#test sub_2
+  matrix_t A = (matrix_t){0};
+  matrix_t B = (matrix_t){0};
+  matrix_t expected = (matrix_t){0};
+
+  s21_create_matrix(1, 1, &A);
+  s21_create_matrix(1, 1, &B);
+  s21_create_matrix(1, 1, &expected);
+  
+  A.matrix[0][0] = 7.3f;
+  B.matrix[0][0] = 2.2f;
+  expected.matrix[0][0] = 5.1f;
+  sub_tc(&A, &B, &expected, OK);
+
+#test multiply_number_1
+  matrix_t A = (matrix_t){0};
+  matrix_t expected = (matrix_t){0};
+  s21_create_matrix(2, 2, &A);
+  s21_create_matrix(2, 2, &expected);
+  A.matrix[0][0] = 4.f;
+  A.matrix[0][1] = 4.f;
+  A.matrix[1][0] = 2.f;
+  A.matrix[1][1] = 2.f;
+  expected.matrix[0][0] = 4.f;
+  expected.matrix[0][1] = 4.f;
+  expected.matrix[1][0] = 2.f;
+  expected.matrix[1][1] = 2.f;
+  multiply_number_tc(&A, 1, &expected, OK);
+
+#test multiply_number_2
+  matrix_t A = (matrix_t){0};
+  matrix_t expected = (matrix_t){0};
+  s21_create_matrix(2, 2, &A);
+  s21_create_matrix(2, 2, &expected);
+  A.matrix[0][0] = 1.1f;
+  A.matrix[0][1] = -2.12454636f;
+  A.matrix[1][0] = 0.f;
+  A.matrix[1][1] = 100.f;
+  expected.matrix[0][0] = -3.3f;
+  expected.matrix[0][1] = 6.37363908f;
+  expected.matrix[1][0] = 0.f;
+  expected.matrix[1][1] = -300.f;
+  multiply_number_tc(&A, -3, &expected, OK);
+
+#test mult_matrix_1
+  matrix_t A = (matrix_t){0};
+  matrix_t B = (matrix_t){0};
+  matrix_t expected = (matrix_t){0};
+
+  s21_create_matrix(3, 2, &A);
+  s21_create_matrix(2, 3, &B);
+  s21_create_matrix(3, 3, &expected);
+  A.matrix[0][0] = 1.f;
+  A.matrix[0][1] = 4.f;
+  A.matrix[1][0] = 2.f;
+  A.matrix[1][1] = 5.f;
+  A.matrix[2][0] = 3.f;
+  A.matrix[2][1] = 6.f;
+  B.matrix[0][0] = 1.f;
+  B.matrix[0][1] = -1.f;
+  B.matrix[0][2] = 1.f;
+  B.matrix[1][0] = 2.f;
+  B.matrix[1][1] = 3.f;
+  B.matrix[1][2] = 4.f;
+  expected.matrix[0][0] = 9.f;
+  expected.matrix[0][1] = 11.f;
+  expected.matrix[0][2] = 17.f;
+  expected.matrix[1][0] = 12.f;
+  expected.matrix[1][1] = 13.f;
+  expected.matrix[1][1] = 22.f;
+  expected.matrix[2][0] = 15.f;
+  expected.matrix[2][1] = 15.f;
+  expected.matrix[2][2] = 27.f;
+  mul_tc(&A, &B, &expected, OK);
+
+#test mult_matrix_2
+  matrix_t A = (matrix_t){0};
+  matrix_t B = (matrix_t){0};
+  matrix_t expected = (matrix_t){0};
+
+  s21_create_matrix(3, 3, &A);
+  s21_create_matrix(3, 3, &B);
+  s21_create_matrix(3, 3, &expected);
+  A.matrix[0][0] = 1.f;
+  A.matrix[0][1] = 2.f;
+  A.matrix[0][2] = 3.f;
+  A.matrix[1][0] = 4.f;
+  A.matrix[1][1] = 5.f;
+  A.matrix[1][1] = 6.f;
+  A.matrix[2][0] = 7.f;
+  A.matrix[2][1] = 8.f;
+  A.matrix[2][2] = 9.f;
+  expected.matrix[0][0] = 0.f;
+  expected.matrix[0][1] = 0.f;
+  expected.matrix[0][2] = 0.f;
+  expected.matrix[1][0] = 0.f;
+  expected.matrix[1][1] = 0.f;
+  expected.matrix[1][1] = 0.f;
+  expected.matrix[2][0] = 0.f;
+  expected.matrix[2][1] = 0.f;
+  expected.matrix[2][2] = 0.f;
+  mul_tc(&A, &B, &expected, OK);
+
+#test determinant_1
+  matrix_t A = (matrix_t){0};
+  s21_create_matrix(1, 1, &A);
+  A.matrix[0][0] = -48.f;
+  determinant_tc(&A, -48, OK);
+
+#test determinant_2
+  matrix_t A = (matrix_t){0};
+  s21_create_matrix(2, 2, &A);
+  A.matrix[0][0] = 1.f;
+  A.matrix[0][1] = 2.f;
+  A.matrix[1][0] = 3.f;
+  A.matrix[1][1] = 4.f;
+  determinant_tc(&A, -2, OK);
+
+#test determinant_3
+  matrix_t A = (matrix_t){0};
+  s21_create_matrix(3, 3, &A);
+  A.matrix[0][0] = 1.f;
+  A.matrix[0][1] = 2.f;
+  A.matrix[0][2] = 3.f;
+  A.matrix[1][0] = 4.f;
+  A.matrix[1][1] = 5.f;
+  A.matrix[1][2] = 6.f;
+  A.matrix[2][0] = 7.f;
+  A.matrix[2][1] = 8.f;
+  A.matrix[2][2] = 9.f;
+  determinant_tc(&A, 0, OK);
+
+#test determinant_4
+  matrix_t A = (matrix_t){0};
+  s21_create_matrix(3, 3, &A);
+  A.matrix[0][0] = 10.f;
+  A.matrix[0][1] = 2.f;
+  A.matrix[0][2] = 3.f;
+  A.matrix[1][0] = 4.f;
+  A.matrix[1][1] = 5.f;
+  A.matrix[1][2] = 6.f;
+  A.matrix[2][0] = 7.f;
+  A.matrix[2][1] = 8.f;
+  A.matrix[2][2] = 9.f;
+  determinant_tc(&A, -27, OK);
+
+
+
+#test determinant_6
+  matrix_t A = (matrix_t){0};
+  s21_create_matrix(1, 2, &A);
+  determinant_tc(&A, 0, CALCULATION_ERROR);
