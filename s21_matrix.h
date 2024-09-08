@@ -19,8 +19,6 @@ typedef struct matrix_struct {
 err_t s21_create_matrix(int rows, int columns, matrix_t *result);
 void s21_remove_matrix(matrix_t *A);
 
-bool s21_eq_matrix(matrix_t *A, matrix_t *B);
-
 err_t s21_sum_matrix(matrix_t *A, matrix_t *B, matrix_t *result);
 err_t s21_sub_matrix(matrix_t *A, matrix_t *B, matrix_t *result);
 
@@ -34,4 +32,8 @@ err_t s21_inverse_matrix(matrix_t *A, matrix_t *result);
 
 void print_matrix(matrix_t *matrix);
 
-#endif  // MATRIX_H
+bool s21_eq_matrix(matrix_t *A, matrix_t *B);
+err_t is_square_matrix(matrix_t *A);
+err_t is_valid_matrix(matrix_t *A);
+
+#endif /* MATRIX_H */

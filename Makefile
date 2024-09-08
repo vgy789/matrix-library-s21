@@ -1,9 +1,9 @@
 CC = gcc
-SRCMODULES = s21_matrix.c
+SRCMODULES = s21_matrix.c matrix_utils.c matrix_operations.c
 OBJMODULES = $(SRCMODULES:.c=.o)
 CFLAGS = -Wall -Werror -Wextra -std=c11 -pedantic
+LDFLAGS = -lm 
 OPTFLAGS = -O2 -flto -march=native
-LDFLAGS = `pkg-config --cflags --libs check`
 
 TEST_EXEC = run_tests.out
 REPORT_DIR = ./report
@@ -14,7 +14,7 @@ rebuild: clean s21_matrix.a
 
 test: clean s21_matrix.a
 	checkmk clean_mode=1 tests/in > tests/tests.c && make fmt
-	$(CC) $(CFLAGS) --coverage -o $(TEST_EXEC) tests/tests.c $(SRCMODULES) $(LDFLAGS)
+	$(CC) $(CFLAGS) --coverage -o $(TEST_EXEC) tests/tests.c $(SRCMODULES) `pkg-config --cflags --libs check`
 	./$(TEST_EXEC)
 
 gcov_report: test
@@ -22,7 +22,7 @@ gcov_report: test
 	genhtml -o $(REPORT_DIR) report.info
 
 %.o: %.c %.h
-	$(CC) $(CFLAGS) $(OPTFLAGS) -c $< -o $@ 
+	$(CC) $(CFLAGS) $(LDFLAGS) $(OPTFLAGS) -c $< -o $@ 
 
 s21_matrix.a: $(OBJMODULES)
 	ar rcs $@ $^

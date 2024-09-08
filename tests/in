@@ -11,8 +11,8 @@ void create_tc(int m, int n, err_t expected) {
     ck_assert_msg(result.rows == m, "expected_rows: %d, got_rows: %d", m, result.rows);
     ck_assert_msg(result.columns == n, "expected_columns: %d, got_columns: %d", n, result.columns);
     ck_assert_msg(result.matrix != NULL, "matrix is NULL");
-    s21_remove_matrix(&result);
   }
+  s21_remove_matrix(&result);
 }
 
 void remove_tc(matrix_t *A) {
@@ -38,10 +38,11 @@ void sum_tc(matrix_t *A, matrix_t *B, matrix_t *expected, err_t expected_code) {
   if (expected_code == OK) {
     bool is_eq = s21_eq_matrix(&result, expected);
     ck_assert(is_eq == SUCCESS);
-    s21_remove_matrix(A);
-    s21_remove_matrix(B);
-    s21_remove_matrix(expected);
   }
+  s21_remove_matrix(A);
+  s21_remove_matrix(B);
+  s21_remove_matrix(&result);
+  s21_remove_matrix(expected);
 }
 
 void sub_tc(matrix_t *A, matrix_t *B, matrix_t *expected, err_t expected_code) {
@@ -51,21 +52,22 @@ void sub_tc(matrix_t *A, matrix_t *B, matrix_t *expected, err_t expected_code) {
   if (expected_code == OK) {
     bool is_eq = s21_eq_matrix(&result, expected);
     ck_assert(is_eq == SUCCESS);
-    s21_remove_matrix(A);
-    s21_remove_matrix(B);
-    s21_remove_matrix(expected);
   }
+  s21_remove_matrix(A);
+  s21_remove_matrix(B);
+  s21_remove_matrix(&result);
+  s21_remove_matrix(expected);
 }
 
-void numeration_matrix(matrix_t *matrix) {
-  int counter = 0;
-  for (int i = 0; i < matrix->rows; ++i) {
-    for (int j = 0; j < matrix->columns; ++j) {
-      matrix->matrix[i][j] = counter;
-      counter += 1;
-    }
-  }
-}
+// void numeration_matrix(matrix_t *matrix) {
+//   int counter = 0;
+//   for (int i = 0; i < matrix->rows; ++i) {
+//     for (int j = 0; j < matrix->columns; ++j) {
+//       matrix->matrix[i][j] = counter;
+//       counter += 1;
+//     }
+//   }
+// }
 
 void multiply_number_tc(matrix_t *A, double number, matrix_t *expected, err_t expected_code) {
   matrix_t result = (matrix_t){0};
@@ -74,9 +76,10 @@ void multiply_number_tc(matrix_t *A, double number, matrix_t *expected, err_t ex
   if (expected_code == OK) {
     bool is_eq = s21_eq_matrix(&result, expected);
     ck_assert(is_eq == SUCCESS);
-    s21_remove_matrix(A);
-    s21_remove_matrix(expected);
   }
+  s21_remove_matrix(A);
+  s21_remove_matrix(&result);
+  s21_remove_matrix(expected);
 }
 
 void mul_tc(matrix_t *A, matrix_t *B, matrix_t *expected, err_t expected_code) {
@@ -86,9 +89,11 @@ void mul_tc(matrix_t *A, matrix_t *B, matrix_t *expected, err_t expected_code) {
   if (expected_code == OK) {
     bool is_eq = s21_eq_matrix(&result, expected);
     ck_assert(is_eq == SUCCESS);
-    s21_remove_matrix(A);
-    s21_remove_matrix(expected);
   }
+  s21_remove_matrix(A);
+  s21_remove_matrix(B);
+  s21_remove_matrix(expected);
+  s21_remove_matrix(&result);
 }
 
 void determinant_tc(matrix_t *A, double expected, err_t expected_code) {
@@ -97,8 +102,8 @@ void determinant_tc(matrix_t *A, double expected, err_t expected_code) {
   ck_assert_msg(err_code == expected_code, "err_code expected: %d, got: %d", expected_code, err_code);
   if (expected_code == OK) {
     ck_assert_msg(expected == result, "expected: %lf, got: %lf", expected, result);
-    s21_remove_matrix(A);
-  }
+}
+  s21_remove_matrix(A);
 }
 
 #test create_1
@@ -365,7 +370,7 @@ create_tc(1, 2, OK);
   s21_create_matrix(1, 1, &expected);
   B.matrix[0][0] = 2.2f;
   expected.matrix[0][0] = 7.3f;
-  sum_tc(&A, &B, &expected, CALCULATION_ERROR);
+  sum_tc(&A, &B, &expected, INCORRECT_MATRIX);
 
 #test sum_4
   matrix_t A = (matrix_t){0};
@@ -377,7 +382,7 @@ create_tc(1, 2, OK);
   s21_create_matrix(1, 1, &expected);
   A.matrix[0][0] = 2.2f;
   expected.matrix[0][0] = 7.3f;
-  sum_tc(&A, &B, &expected, CALCULATION_ERROR);
+  sum_tc(&A, &B, &expected, INCORRECT_MATRIX);
 
 #test sum_5
   matrix_t A = (matrix_t){0};
@@ -557,9 +562,7 @@ create_tc(1, 2, OK);
   A.matrix[2][2] = 9.f;
   determinant_tc(&A, -27, OK);
 
-
-
 #test determinant_6
   matrix_t A = (matrix_t){0};
   s21_create_matrix(1, 2, &A);
-  determinant_tc(&A, 0, CALCULATION_ERROR);
+  determinant_tc(&A, 0, INCORRECT_MATRIX);
