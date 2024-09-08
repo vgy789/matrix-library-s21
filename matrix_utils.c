@@ -27,7 +27,7 @@ bool s21_eq_matrix(matrix_t *A, matrix_t *B) {
   return SUCCESS;
 }
 
-#ifndef FOR_VERTER
+#ifdef DEBUG
 void print_matrix(matrix_t *matrix) {
   for (int i = 0; i < matrix->rows; ++i) {
     if (i != 0) printf("\n");
