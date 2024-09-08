@@ -392,7 +392,7 @@ create_tc(1, 2, OK);
   s21_create_matrix(1, 1, &A);
   s21_create_matrix(2, 2, &B);
   s21_create_matrix(2, 2, &expected);
-  sum_tc(&A, &B, &expected, CALCULATION_ERROR);
+  sum_tc(&A, &B, &expected, INCORRECT_MATRIX);
 
 #test sub_1
   matrix_t A = (matrix_t){0};
@@ -485,10 +485,11 @@ create_tc(1, 2, OK);
   expected.matrix[0][2] = 17.f;
   expected.matrix[1][0] = 12.f;
   expected.matrix[1][1] = 13.f;
-  expected.matrix[1][1] = 22.f;
+  expected.matrix[1][2] = 22.f;
   expected.matrix[2][0] = 15.f;
   expected.matrix[2][1] = 15.f;
   expected.matrix[2][2] = 27.f;
+
   mul_tc(&A, &B, &expected, OK);
 
 #test mult_matrix_2
@@ -504,7 +505,7 @@ create_tc(1, 2, OK);
   A.matrix[0][2] = 3.f;
   A.matrix[1][0] = 4.f;
   A.matrix[1][1] = 5.f;
-  A.matrix[1][1] = 6.f;
+  A.matrix[1][2] = 6.f;
   A.matrix[2][0] = 7.f;
   A.matrix[2][1] = 8.f;
   A.matrix[2][2] = 9.f;

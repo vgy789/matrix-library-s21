@@ -1,8 +1,8 @@
 CC = gcc
 SRCMODULES = s21_matrix.c matrix_utils.c matrix_operations.c
 OBJMODULES = $(SRCMODULES:.c=.o)
-CFLAGS = -Wall -Werror -Wextra -std=c11 -pedantic
-LDFLAGS = -lm 
+CFLAGS = -D FOR_VERTER -Wall -Werror -Wextra -std=c11 -pedantic
+LDFLAGS = -lm
 OPTFLAGS = -O2 -flto -march=native
 
 TEST_EXEC = run_tests.out

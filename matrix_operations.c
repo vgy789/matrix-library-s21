@@ -10,12 +10,17 @@ static err_t sumsub_matrix(matrix_t *A, matrix_t *B, matrix_t *result,
                            const arithmetic_func operation) {
   err_t err_code = OK;
 
-  err_code = is_valid_matrix(A);
+  err_code =
+      (is_valid_matrix(A) == OK && is_valid_matrix(B) == OK ? OK
+                                                            : INCORRECT_MATRIX);
+
   if (err_code == OK) {
-    err_code = is_valid_matrix(B);
+    const bool is_equal_size = (A->rows == B->rows && A->columns == B->columns);
+    err_code = (is_equal_size ? OK : INCORRECT_MATRIX);
   }
-  if (err_code == OK && (A->columns != B->columns || A->rows != B->rows)) {
-    err_code = CALCULATION_ERROR;
+
+  if (err_code == OK) {
+    err_code = s21_create_matrix(A->rows, B->columns, result);
   }
   if (err_code == OK) {
     err_code = s21_create_matrix(A->rows, A->columns, result);
@@ -62,7 +67,7 @@ err_t s21_mult_number(matrix_t *A, double number, matrix_t *result) {
 
 static void mult_matrix(matrix_t *A, matrix_t *B, matrix_t *result) {
   for (int i = 0; i < A->rows; ++i) {
-    for (int j = 0; j < A->columns; ++j) {
+    for (int j = 0; j < B->columns; ++j) {
       for (int k = 0; k < B->rows; ++k) {
         result->matrix[i][j] += A->matrix[i][k] * B->matrix[k][j];
       }
@@ -73,11 +78,12 @@ static void mult_matrix(matrix_t *A, matrix_t *B, matrix_t *result) {
 err_t s21_mult_matrix(matrix_t *A, matrix_t *B, matrix_t *result) {
   err_t err_code = OK;
 
-  err_code = (is_valid_matrix(A) == OK) && (is_valid_matrix(B) == OK)
-                 ? OK
-                 : INCORRECT_MATRIX;
   err_code =
-      (err_code == OK) && (A->columns == B->rows) ? OK : INCORRECT_MATRIX;
+      (is_valid_matrix(A) == OK && is_valid_matrix(B) == OK ? OK
+                                                            : INCORRECT_MATRIX);
+  if (err_code == OK) {
+    err_code = (A->columns == B->rows ? OK : INCORRECT_MATRIX);
+  }
 
   if (err_code == OK) {
     err_code = s21_create_matrix(A->rows, B->columns, result);

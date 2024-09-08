@@ -6,7 +6,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define EPS (1.0e-6)
 typedef enum { OK, INCORRECT_MATRIX, CALCULATION_ERROR } err_t;
 typedef enum { FAILURE, SUCCESS } cmp_result;
 

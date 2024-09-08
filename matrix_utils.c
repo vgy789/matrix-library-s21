@@ -1,5 +1,7 @@
 #include "s21_matrix.h"
 
+#define EPS (1.0e-6)
+
 err_t is_valid_matrix(matrix_t *A) {
   return A != NULL && A->matrix != NULL && A->rows > 0 && A->columns > 0
              ? OK
@@ -17,7 +19,7 @@ bool s21_eq_matrix(matrix_t *A, matrix_t *B) {
 
   for (int i = 0; i < A->rows; ++i) {
     for (int j = 0; j < A->columns; ++j) {
-      if (A->matrix[i][j] - B->matrix[i][j] > EPS) {
+      if (fabs(A->matrix[i][j] - B->matrix[i][j]) > EPS) {
         return FAILURE;
       }
     }
@@ -25,6 +27,7 @@ bool s21_eq_matrix(matrix_t *A, matrix_t *B) {
   return SUCCESS;
 }
 
+#ifndef FOR_VERTER
 void print_matrix(matrix_t *matrix) {
   for (int i = 0; i < matrix->rows; ++i) {
     if (i != 0) printf("\n");
@@ -34,3 +37,4 @@ void print_matrix(matrix_t *matrix) {
     }
   }
 }
+#endif
