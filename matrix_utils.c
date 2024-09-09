@@ -9,7 +9,7 @@ err_t is_valid_matrix(matrix_t *A) {
 }
 
 err_t is_square_matrix(matrix_t *A) {
-  return A->rows == A->columns ? OK : INCORRECT_MATRIX;
+  return A->rows == A->columns ? OK : CALCULATION_ERROR;
 }
 
 bool s21_eq_matrix(matrix_t *A, matrix_t *B) {

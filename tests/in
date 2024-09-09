@@ -36,7 +36,7 @@ void equalent_tc(matrix_t *A, matrix_t *B, cmp_result expected) {
 void sum_tc(matrix_t *A, matrix_t *B, matrix_t *expected, err_t expected_code) {
   matrix_t result = (matrix_t){0};
   err_t err_code = s21_sum_matrix(A, B, &result);
-  ck_assert_msg(err_code == expected_code, "error_code: %d", err_code);
+  ck_assert_msg(err_code == expected_code, "err_code expected: %d, got: %d", expected_code, err_code);
   if (expected_code == OK) {
     bool is_eq = s21_eq_matrix(&result, expected);
     ck_assert(is_eq == SUCCESS);
@@ -50,7 +50,7 @@ void sum_tc(matrix_t *A, matrix_t *B, matrix_t *expected, err_t expected_code) {
 void sub_tc(matrix_t *A, matrix_t *B, matrix_t *expected, err_t expected_code) {
   matrix_t result = (matrix_t){0};
   err_t err_code = s21_sub_matrix(A, B, &result);
-  ck_assert_msg(err_code == expected_code, "error sum: %d", err_code);
+  ck_assert_msg(err_code == expected_code, "err_code expected: %d, got: %d", expected_code, err_code);
   if (expected_code == OK) {
     bool is_eq = s21_eq_matrix(&result, expected);
     ck_assert(is_eq == SUCCESS);
@@ -74,7 +74,7 @@ void sub_tc(matrix_t *A, matrix_t *B, matrix_t *expected, err_t expected_code) {
 void multiply_number_tc(matrix_t *A, double number, matrix_t *expected, err_t expected_code) {
   matrix_t result = (matrix_t){0};
   err_t err_code = s21_mult_number(A, number, &result);
-  ck_assert_msg(err_code == expected_code, "error mul num: %d", err_code);
+  ck_assert_msg(err_code == expected_code, "err_code expected: %d, got: %d", expected_code, err_code);
   if (expected_code == OK) {
     bool is_eq = s21_eq_matrix(&result, expected);
     ck_assert(is_eq == SUCCESS);
@@ -87,7 +87,7 @@ void multiply_number_tc(matrix_t *A, double number, matrix_t *expected, err_t ex
 void mul_tc(matrix_t *A, matrix_t *B, matrix_t *expected, err_t expected_code) {
   matrix_t result = (matrix_t){0};
   err_t err_code = s21_mult_matrix(A, B, &result);
-  ck_assert_msg(err_code == expected_code, "error mul: %d", err_code);
+  ck_assert_msg(err_code == expected_code, "err_code expected: %d, got: %d", expected_code, err_code);
   if (expected_code == OK) {
     bool is_eq = s21_eq_matrix(&result, expected);
     ck_assert(is_eq == SUCCESS);
@@ -124,6 +124,19 @@ void inverse_tc(matrix_t *A, matrix_t *expected, err_t expected_code) {
 void transpose_tc(matrix_t *A, matrix_t *expected, err_t expected_code) {
   matrix_t result = (matrix_t){0};
   err_t err_code = s21_transpose(A, &result);
+  ck_assert_msg(err_code == expected_code, "err_code expected: %d, got: %d", expected_code, err_code);
+  if (expected_code == OK) {
+    bool is_eq = s21_eq_matrix(&result, expected);
+    ck_assert(is_eq == SUCCESS);
+  }
+  s21_remove_matrix(A);
+  s21_remove_matrix(expected);
+  s21_remove_matrix(&result);
+}
+
+void complements_tc(matrix_t *A, matrix_t *expected, err_t expected_code) {
+  matrix_t result = (matrix_t){0};
+  err_t err_code = s21_calc_complements(A, &result);
   ck_assert_msg(err_code == expected_code, "err_code expected: %d, got: %d", expected_code, err_code);
   if (expected_code == OK) {
     bool is_eq = s21_eq_matrix(&result, expected);
@@ -388,7 +401,7 @@ create_tc(1, 2, OK);
   s21_create_matrix(1, 1, &A);
   s21_create_matrix(2, 2, &B);
   s21_create_matrix(2, 2, &expected);
-  sum_tc(&A, &B, &expected, INCORRECT_MATRIX);
+  sum_tc(&A, &B, &expected, CALCULATION_ERROR);
 
 #test sub_1
   matrix_t A = (matrix_t){0};
@@ -516,6 +529,48 @@ create_tc(1, 2, OK);
   expected.matrix[2][2] = 0.0;
   mul_tc(&A, &B, &expected, OK);
 
+#test mult_matrix_3
+  matrix_t A = (matrix_t){0};
+  matrix_t B = (matrix_t){0};
+  s21_create_matrix(1, 1, &A);
+  s21_create_matrix(3, 4, &B);
+  mul_tc(&A, &B, NULL, CALCULATION_ERROR);
+
+#test mult_matrix_4
+  matrix_t A = (matrix_t){0};
+  matrix_t B = (matrix_t){0};
+  matrix_t expected = (matrix_t){0};
+  s21_create_matrix(2, 3, &A);
+  s21_create_matrix(3, 4, &B);
+  s21_create_matrix(2, 4, &expected);
+  A.matrix[0][0] = 2.2;
+  A.matrix[0][1] = 2.0;
+  A.matrix[0][2] = 3.0;
+  A.matrix[1][0] = 0.0;
+  A.matrix[1][1] = 4.0;
+  A.matrix[1][2] = 1.0;
+  B.matrix[0][0] = 0.0;
+  B.matrix[0][1] = 3.0;
+  B.matrix[0][2] = 4.0;
+  B.matrix[0][3] = 5.0;
+  B.matrix[1][0] = 2.0;
+  B.matrix[1][1] = 5.0;
+  B.matrix[1][2] = 6.0;
+  B.matrix[1][3] = 7.0;
+  B.matrix[2][0] = 8.0;
+  B.matrix[2][1] = 7.0;
+  B.matrix[2][2] = 5.0;
+  B.matrix[2][3] = 43.0;
+  expected.matrix[0][0] = 28.0;
+  expected.matrix[0][1] = 37.6;
+  expected.matrix[0][2] = 35.8;
+  expected.matrix[0][3] = 154.0;
+  expected.matrix[1][0] = 16.0;
+  expected.matrix[1][1] = 27.0;
+  expected.matrix[1][2] = 29.0;
+  expected.matrix[1][3] = 71.0;
+  mul_tc(&A, &B, &expected, OK);
+
 #test determinant_1
   matrix_t A = (matrix_t){0};
   s21_create_matrix(1, 1, &A);
@@ -562,7 +617,7 @@ create_tc(1, 2, OK);
 #test determinant_6
   matrix_t A = (matrix_t){0};
   s21_create_matrix(1, 2, &A);
-  determinant_tc(&A, 0, INCORRECT_MATRIX);
+  determinant_tc(&A, 0, CALCULATION_ERROR);
 
 #test determinant_7
   matrix_t A = (matrix_t){0};
@@ -615,6 +670,11 @@ create_tc(1, 2, OK);
   A.matrix[4][4] = 5.5;
   determinant_tc(&A, 108.16, OK);
 
+#test determinant_9
+  matrix_t A = (matrix_t){0};
+  s21_create_matrix(1, 0, &A);
+  determinant_tc(&A, 0, INCORRECT_MATRIX);
+
 #test inverse_matrix_1
   matrix_t A = (matrix_t){0};
   matrix_t expected = (matrix_t){0};
@@ -639,3 +699,128 @@ create_tc(1, 2, OK);
   expected.matrix[2][1] = -29.0;
   expected.matrix[2][2] = 24.0;
   inverse_tc(&A, &expected, OK);
+
+#test inverse_matrix_2
+  matrix_t A = (matrix_t){0};
+  matrix_t expected = (matrix_t){0};
+  s21_create_matrix(2, 2, &A);
+  A.matrix[0][0] = 2.1;
+  A.matrix[0][1] = 5.2;
+  A.matrix[1][0] = 6.1;
+  A.matrix[1][1] = 3.2;
+  s21_create_matrix(2, 2, &expected);
+  expected.matrix[0][0] = -0.128;
+  expected.matrix[0][1] = 0.208;
+  expected.matrix[1][0] = 0.244;
+  expected.matrix[1][1] = -0.084;
+  inverse_tc(&A, &expected, OK);
+
+#test inverse_matrix_3
+  matrix_t A = (matrix_t){0};
+  matrix_t expected = (matrix_t){0};
+  s21_create_matrix(4, 4, &A);
+  A.matrix[0][0] = 2.0;
+  A.matrix[0][1] = 1.0;
+  A.matrix[0][2] = 1.0;
+  A.matrix[0][3] = 1.0;
+  A.matrix[1][0] = 0.0;
+  A.matrix[1][1] = 2.0;
+  A.matrix[1][2] = 1.0;
+  A.matrix[1][3] = 0.0;
+  A.matrix[2][0] = 2.0;
+  A.matrix[2][1] = 1.0;
+  A.matrix[2][2] = 1.0;
+  A.matrix[2][3] = 3.0;
+  A.matrix[3][0] = 4.0;
+  A.matrix[3][1] = 0.0;
+  A.matrix[3][2] = 2.0;
+  A.matrix[3][3] = 1.0;
+  s21_create_matrix(4, 4, &expected);
+  expected.matrix[0][0] = 1.375;
+  expected.matrix[0][1] = -0.5;
+  expected.matrix[0][2] = -0.375;
+  expected.matrix[0][3] = -0.25;
+  expected.matrix[1][0] = 1.25;
+  expected.matrix[1][1] = 0;
+  expected.matrix[1][2] = -0.25;
+  expected.matrix[1][3] = -0.5;
+  expected.matrix[2][0] = -2.5;
+  expected.matrix[2][1] = 1;
+  expected.matrix[2][2] = 0.5;
+  expected.matrix[2][3] = 1;
+  expected.matrix[3][0] = -0.5;
+  expected.matrix[3][1] = 0;
+  expected.matrix[3][2] = 0.5;
+  expected.matrix[3][3] = 0;
+  inverse_tc(&A, &expected, OK);
+
+#test inverse_matrix_4
+  matrix_t A = (matrix_t){0};
+  matrix_t expected = (matrix_t){0};
+  s21_create_matrix(3, 3, &A);
+  A.matrix[0][0] = 2.0;
+  A.matrix[0][1] = 1.0;
+  A.matrix[0][2] = 3.0;
+  A.matrix[1][0] = 4.0;
+  A.matrix[1][1] = 3.0;
+  A.matrix[1][2] = 1.0;
+  A.matrix[2][0] = 2.0;
+  A.matrix[2][1] = 3.0;
+  A.matrix[2][2] = 1.0;
+  s21_create_matrix(3, 3, &expected);
+  expected.matrix[0][0] = 0;
+  expected.matrix[0][1] = 0.5;
+  expected.matrix[0][2] = -0.5;
+  expected.matrix[1][0] = -0.125;
+  expected.matrix[1][1] = -0.25;
+  expected.matrix[1][2] = 0.625;
+  expected.matrix[2][0] = 0.375;
+  expected.matrix[2][1] = -0.25;
+  expected.matrix[2][2] = 0.125;
+  inverse_tc(&A, &expected, OK);
+
+#test inverse_matrix_5
+  matrix_t A = (matrix_t){0};
+  s21_create_matrix(3, 2, &A);
+  inverse_tc(&A, NULL, CALCULATION_ERROR);
+
+#test inverse_matrix_6
+  matrix_t A = (matrix_t){0};
+  s21_create_matrix(3, 0, &A);
+  inverse_tc(&A, NULL, INCORRECT_MATRIX);
+
+#test complements_1
+  matrix_t A = (matrix_t){0};
+  matrix_t expected = (matrix_t){0};
+  s21_create_matrix(3, 3, &A);
+  A.matrix[0][0] = 1.0;
+  A.matrix[0][1] = 2.0;
+  A.matrix[0][2] = 3.0;
+  A.matrix[1][0] = 0.0;
+  A.matrix[1][1] = 4.0;
+  A.matrix[1][2] = 2.0;
+  A.matrix[2][0] = 5.0;
+  A.matrix[2][1] = 2.0;
+  A.matrix[2][2] = 1.0;
+  s21_create_matrix(3, 3, &expected);
+  expected.matrix[0][0] = 0.0;
+  expected.matrix[0][1] = 10.0;
+  expected.matrix[0][2] = -20.0;
+  expected.matrix[1][0] = 4.0;
+  expected.matrix[1][1] = -14.0;
+  expected.matrix[1][2] = 8.0;
+  expected.matrix[2][0] = -8.0;
+  expected.matrix[2][1] = -2.0;
+  expected.matrix[2][2] = 4.0;
+  complements_tc(&A, &expected, OK);
+
+#test complements_2
+  matrix_t A = (matrix_t){0};
+  s21_create_matrix(0, 3, &A); 
+  complements_tc(&A, NULL, INCORRECT_MATRIX);
+
+#test complements_3
+  matrix_t A = (matrix_t){0};
+  matrix_t expected = (matrix_t){0};
+  s21_create_matrix(2, 3, &A);
+  complements_tc(&A, &expected, CALCULATION_ERROR);
