@@ -35,4 +35,6 @@ bool s21_eq_matrix(matrix_t *A, matrix_t *B);
 err_t is_square_matrix(matrix_t *A);
 err_t is_valid_matrix(matrix_t *A);
 
+void get_submatrix(matrix_t *A, matrix_t *submatrix, int row, int column);
+
 #endif /* MATRIX_H */

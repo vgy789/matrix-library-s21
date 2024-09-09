@@ -109,59 +109,65 @@ err_t s21_mult_matrix(matrix_t *A, matrix_t *B, matrix_t *result) {
 //   return err_code;
 // }
 
-// err_t s21_calc_complements(matrix_t *A, matrix_t *result) {
+void get_submatrix(matrix_t *A, matrix_t *submatrix, int row, int column) {
+  bool row_passed = false;
+  bool column_passed = false;
 
-// }
+  for (int i = 0; i < A->rows; ++i) {
+    if (i == row) continue;
+    row_passed = (i > row);
+    for (int j = 0; j < A->columns; ++j) {
+      if (j == column) continue;
+      column_passed = (j > column);
+      submatrix->matrix[i - row_passed][j - column_passed] = A->matrix[i][j];
+    }
+  }
+}
+
+static double det_recursive(matrix_t *A) {
+  double det = 0.0;
+  if (A->rows == 1) {
+    return A->matrix[0][0];
+  }
+  if (A->rows == 2) {
+    return A->matrix[0][0] * A->matrix[1][1] -
+           A->matrix[0][1] * A->matrix[1][0];
+  }
+
+  matrix_t submatrix;
+  s21_create_matrix(A->rows - 1, A->rows - 1, &submatrix);
+
+  // https://ru.onlinemschool.com/math/library/matrix/minors/#h2
+  // разложение по первой строке
+  for (int k = 0; k < A->rows; ++k) {
+    get_submatrix(A, &submatrix, 0, k);
+    const double sign = (pow(-1.0f, k));
+    det += sign * A->matrix[0][k] * det_recursive(&submatrix);
+  }
+  s21_remove_matrix(&submatrix);
+
+  return det;
+}
 
 err_t s21_determinant(matrix_t *A, double *result) {
   err_t err_code = OK;
 
-  if (is_square_matrix(A) != OK || result == NULL) {
-    return INCORRECT_MATRIX;
+  err_code =
+      (is_square_matrix(A) == OK && result != NULL ? OK : INCORRECT_MATRIX);
+  if (err_code == OK) {
+    *result = det_recursive(A);
   }
-
-  if (A->rows == 2) {
-    *result =
-        A->matrix[0][0] * A->matrix[1][1] - A->matrix[0][1] * A->matrix[1][0];
-    return OK;
-  }
-
-  if (A->rows == 1) {
-    *result = A->matrix[0][0];
-    return OK;
-  }
-
-  // https://ru.onlinemschool.com/math/library/matrix/minors/#h2
-  // разложение по строке
-  matrix_t minor;
-  s21_create_matrix(A->rows - 1, A->rows - 1, &minor);
-  *result = 0;
-
-  for (int k = 0; k < A->columns; ++k) {
-    for (int i = 1; i < A->rows; ++i) {
-      for (int j = 0; j < A->columns; ++j) {
-        if (j == k) {
-          continue;
-        }
-        minor.matrix[i - 1][j - (j > k)] = A->matrix[i][j];
-      }
-    }
-    *result += A->matrix[0][k] * (pow(-1.f, k)) *
-               (minor.matrix[0][0] * minor.matrix[1][1] -
-                minor.matrix[0][1] * minor.matrix[1][0]);
-  }
-
-  if (A->rows > 3) {
-  }
-
-  s21_remove_matrix(&minor);
   return err_code;
 }
 
 err_t s21_transpose(matrix_t *A, matrix_t *result) {
   err_t err_code = OK;
 
-  err_code = s21_create_matrix(A->columns, A->rows, result);
+  err_code = is_valid_matrix(A);
+
+  if (err_code == OK) {
+    err_code = s21_create_matrix(A->columns, A->rows, result);
+  }
   if (err_code == OK) {
     for (int i = 0; i < A->rows; ++i) {
       for (int j = 0; j < A->columns; ++j) {
@@ -173,6 +179,59 @@ err_t s21_transpose(matrix_t *A, matrix_t *result) {
   return err_code;
 }
 
-// err_t s21_inverse_matrix(matrix_t *A, matrix_t *result) {
+// err_t s21_calc_complements(matrix_t *A, matrix_t *result) {
+//   err_t err_code = OK;
+
+//   err_code = is_square_matrix(A);
 
 // }
+
+void get_minor_matrix(matrix_t *A, matrix_t *M) {
+  matrix_t submatrix;
+  s21_create_matrix(A->rows - 1, A->rows - 1, &submatrix);
+
+  for (int i = 0; i < A->rows; ++i) {
+    for (int j = 0; j < A->columns; ++j) {
+      get_submatrix(A, &submatrix, i, j);
+      M->matrix[i][j] = det_recursive(&submatrix);
+    }
+  }
+  s21_remove_matrix(&submatrix);
+}
+
+void get_algebraic_complement(matrix_t *A, matrix_t *M) {
+  int sign = +1;
+
+  get_minor_matrix(A, M);
+  for (int i = 0; i < A->rows; ++i) {
+    for (int j = 0; j < A->columns; ++j) {
+      M->matrix[i][j] = sign * M->matrix[i][j];
+      sign = -sign;
+    }
+  }
+}
+
+err_t s21_inverse_matrix(matrix_t *A, matrix_t *result) {
+  err_t err_code = OK;
+  double det = 0.;
+
+  err_code = is_square_matrix(A);
+
+  if (err_code == OK) {
+    det = det_recursive(A);
+    err_code = (det != 0 ? OK : CALCULATION_ERROR);
+  }
+
+  if (err_code == OK) {
+    matrix_t M;
+    s21_create_matrix(A->rows, A->rows, &M);
+    get_algebraic_complement(A, &M);
+    matrix_t MT;
+    s21_transpose(&M, &MT);
+    s21_mult_number(&MT, 1.0 / det, result);
+    s21_remove_matrix(&M);
+    s21_remove_matrix(&MT);
+  }
+
+  return err_code;
+}
