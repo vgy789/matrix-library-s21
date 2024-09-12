@@ -48,7 +48,7 @@ err_t s21_mult_number(matrix_t *A, double number, matrix_t *result) {
 
   err_code = is_valid_matrix(A);
   if (err_code == OK) {
-    err_code = s21_create_matrix(A->columns, A->rows, result);
+    err_code = s21_create_matrix(A->rows, A->columns, result);
   }
   if (err_code == OK) {
     for (int i = 0; i < A->rows; ++i) {

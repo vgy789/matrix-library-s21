@@ -61,16 +61,6 @@ void sub_tc(matrix_t *A, matrix_t *B, matrix_t *expected, err_t expected_code) {
   s21_remove_matrix(expected);
 }
 
-// void numeration_matrix(matrix_t *matrix) {
-//   int counter = 0;
-//   for (int i = 0; i < matrix->rows; ++i) {
-//     for (int j = 0; j < matrix->columns; ++j) {
-//       matrix->matrix[i][j] = counter;
-//       counter += 1;
-//     }
-//   }
-// }
-
 void multiply_number_tc(matrix_t *A, double number, matrix_t *expected, err_t expected_code) {
   matrix_t result = (matrix_t){0};
   err_t err_code = s21_mult_number(A, number, &result);
