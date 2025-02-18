@@ -1,0 +1,9 @@
+Matrix Library
+Copyright 2024
+
+This project was created as part of the School 21 curriculum.
+
+This project implements a matrix library with basic operations like addition, 
+multiplication, determinant calculation and other operations with matrices.
+
+This product is licensed under the Apache License, Version 2.0.
