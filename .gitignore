@@ -1,0 +1,7 @@
+*.o
+*.a
+
+tests.c
+
+*gcno
+*gcda
