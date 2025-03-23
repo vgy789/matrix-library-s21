@@ -1,4 +1,4 @@
-#include "../s21_matrix.h"
+#include "../src/s21_matrix.h"
 #include <check.h>
 #include <stdbool.h>
 
